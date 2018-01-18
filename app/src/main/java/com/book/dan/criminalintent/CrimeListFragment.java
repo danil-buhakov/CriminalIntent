@@ -1,6 +1,7 @@
 package com.book.dan.criminalintent;
 
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -18,8 +19,10 @@ import android.widget.Toast;
 import java.util.List;
 
 public class CrimeListFragment extends Fragment {
+    private static final int CRIME_ACTIVITY_NUMBER=1;
     private RecyclerView mCrimeRecyclerView;
     private CrimeAdapter mCrimeAdapter;
+    private List<Crime> crimes;
 
     @Nullable
     @Override
@@ -31,21 +34,11 @@ public class CrimeListFragment extends Fragment {
         return v;
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        updateUI();
-    }
-
     private void updateUI(){
         CrimeLab crimeLab = CrimeLab.get(getActivity());
-        List<Crime> crimes = crimeLab.getCrimes();
-        if(mCrimeAdapter==null) {
-            mCrimeAdapter = new CrimeAdapter(crimes);
-            mCrimeRecyclerView.setAdapter(mCrimeAdapter);
-        }
-        else
-            mCrimeAdapter.notifyDataSetChanged();
+        crimes = crimeLab.getCrimes();
+        mCrimeAdapter = new CrimeAdapter(crimes);
+        mCrimeRecyclerView.setAdapter(mCrimeAdapter);
     }
 
     private class CrimeHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
@@ -73,7 +66,7 @@ public class CrimeListFragment extends Fragment {
         @Override
         public void onClick(View v) {
             Intent intent = CrimeActivity.newIntent(getActivity(),mCrime.getId());
-            startActivity(intent);
+            startActivityForResult(intent,CRIME_ACTIVITY_NUMBER);
         }
     }
 
@@ -98,6 +91,20 @@ public class CrimeListFragment extends Fragment {
         @Override
         public int getItemCount() {
             return mCrimes.size();
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if(resultCode!= Activity.RESULT_OK)
+            return;
+        if(requestCode==CRIME_ACTIVITY_NUMBER){
+            for(int i=0; i<crimes.size();i++){
+                if(crimes.get(i).getId().equals(CrimeActivity.getIdFromIntent(data))) {
+                    mCrimeAdapter.notifyItemChanged(i);
+                    return;
+                }
+            }
         }
     }
 }
