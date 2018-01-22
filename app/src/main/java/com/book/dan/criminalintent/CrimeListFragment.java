@@ -19,6 +19,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.w3c.dom.Text;
+
 import java.util.List;
 
 public class CrimeListFragment extends Fragment {
@@ -26,6 +28,7 @@ public class CrimeListFragment extends Fragment {
 
     private RecyclerView mCrimeRecyclerView;
     private CrimeAdapter mCrimeAdapter;
+    private TextView mTextRecyclerHint;
     private boolean mSubtitleVisible = false;
 
     @Override
@@ -43,6 +46,7 @@ public class CrimeListFragment extends Fragment {
         View v = inflater.inflate(R.layout.fragment_crime_list,container,false);
         mCrimeRecyclerView = (RecyclerView) v.findViewById(R.id.crime_recycler_view);
         mCrimeRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        mTextRecyclerHint = (TextView) v.findViewById(R.id.recycler_hint);
         updateUI();
         return v;
     }
@@ -62,6 +66,14 @@ public class CrimeListFragment extends Fragment {
         }
         else
             mCrimeAdapter.notifyDataSetChanged();
+        if(crimes.size()==0){
+            mCrimeRecyclerView.setVisibility(View.GONE);
+            mTextRecyclerHint.setVisibility(View.VISIBLE);
+        }
+        else{
+            mCrimeRecyclerView.setVisibility(View.VISIBLE);
+            mTextRecyclerHint.setVisibility(View.GONE);
+        }
         updateSubtitle();
     }
 
