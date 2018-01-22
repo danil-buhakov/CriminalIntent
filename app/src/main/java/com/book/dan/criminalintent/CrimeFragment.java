@@ -17,19 +17,23 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.UUID;
 
 public class CrimeFragment extends Fragment {
     private static final String ARG_CRIME_ID="crime_id";
     private static final String DIALOG_DATE = "Dialog date";
+    private static final String DIALOG_TIME = "Dialog time";
 
     private static final int TARGET_DATE = 0;
+    private static final int TARGET_TIME = 1;
 
     private Crime mCrime;
     private EditText mTitleField;
     private Button mDateButton;
     private CheckBox mSolvedCheckBox;
+    private Button mTimeButton;
 
     public static CrimeFragment newInstance(UUID id){
         Bundle args = new Bundle();
@@ -55,10 +59,19 @@ public class CrimeFragment extends Fragment {
             mCrime.setDate(DatePickerFragment.getDateFromIntent(data));
             updateDate();
         }
+        if(requestCode==TARGET_TIME){
+            mCrime.setDate(TimePickerFragment.getDateFromIntent(data));
+            updateTime();
+            updateDate();
+        }
     }
 
     private void updateDate() {
         mDateButton.setText(mCrime.getDate().toString());
+    }
+    private void updateTime() {
+        SimpleDateFormat localTime = new SimpleDateFormat("HH:mm:ss");
+        mTimeButton.setText(localTime.format(mCrime.getDate()));
     }
 
     @Nullable
@@ -100,7 +113,17 @@ public class CrimeFragment extends Fragment {
                 mCrime.setSolved(isChecked);
             }
         });
-
+        mTimeButton = (Button) v.findViewById(R.id.crime_time);
+        updateTime();
+        mTimeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                FragmentManager fragmentManager = getFragmentManager();
+                TimePickerFragment fragment = TimePickerFragment.newInstance(mCrime.getDate());
+                fragment.setTargetFragment(CrimeFragment.this, TARGET_TIME);
+                fragment.show(fragmentManager, DIALOG_TIME);
+            }
+        });
         return v;
     }
 }
