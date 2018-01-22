@@ -41,7 +41,7 @@ public class DatePickerFragment extends DialogFragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.dialog_date,container);
+        View v = inflater.inflate(R.layout.dialog_date,container,false);
         Date date = (Date) getArguments().getSerializable(ARG_DATE);
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
@@ -59,7 +59,6 @@ public class DatePickerFragment extends DialogFragment {
                 int day = mDatePicker.getDayOfMonth();
                 Date selectedDate = new GregorianCalendar(year,month,day).getTime();
                 sendResults(Activity.RESULT_OK,selectedDate);
-                dismiss();
             }
         });
         return v;
@@ -93,11 +92,16 @@ public class DatePickerFragment extends DialogFragment {
                 .create();
     }*/
     private void sendResults(int resultCode, Date date){
-        if(getTargetFragment()==null)
-            return;
         Intent intent = new Intent();
         intent.putExtra(DATE_TARGET,date);
-        getTargetFragment().onActivityResult(getTargetRequestCode(),resultCode,intent);
+        if(getTargetFragment()==null) {
+            getActivity().setResult(Activity.RESULT_OK, intent);
+            getActivity().finish();
+        }
+        else {
+            getTargetFragment().onActivityResult(getTargetRequestCode(), resultCode, intent);
+            dismiss();
+        }
     }
 
     public static Date getDateFromIntent(Intent intent){
