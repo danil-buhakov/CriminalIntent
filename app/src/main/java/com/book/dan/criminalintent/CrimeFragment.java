@@ -11,6 +11,7 @@ import android.provider.ContactsContract;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.ShareCompat;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -129,12 +130,13 @@ public class CrimeFragment extends Fragment {
         mReportButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(Intent.ACTION_SEND);
-                intent.setType("text/plain");
-                intent.putExtra(Intent.EXTRA_TEXT,getCrimeReport());
-                intent.putExtra(Intent.EXTRA_SUBJECT,getString(R.string.crime_report_subject));
-                intent = Intent.createChooser(intent,getString(R.string.crime_report_subject));
-                startActivity(intent);
+                Intent i = ShareCompat.IntentBuilder.
+                        from(getActivity()).
+                        setType("text/plain").
+                        setText(getCrimeReport()).
+                        setSubject(getString(R.string.crime_report_subject)).
+                        createChooserIntent();
+                startActivity(i);
             }
         });
         final Intent pickContacts = new Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI);
