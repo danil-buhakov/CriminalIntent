@@ -3,8 +3,11 @@ package com.book.dan.criminalintent;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
+import android.database.CursorWrapper;
 import android.database.sqlite.SQLiteDatabase;
 
+import com.book.dan.criminalintent.database.CrimeCursorWrapper;
 import com.book.dan.criminalintent.database.CrimeDbHelper;
 import com.book.dan.criminalintent.database.CrimeDbSchema;
 import com.book.dan.criminalintent.database.CrimeDbSchema.CrimeTable;
@@ -31,11 +34,34 @@ public class CrimeLab {
     }
 
     public List<Crime> getCrimes(){
-        return null;
+        List<Crime> crimes = new ArrayList<>();
+        CrimeCursorWrapper cursorWrapper = queryCrimes(null,null);
+        try{
+            cursorWrapper.moveToFirst();
+            while(!cursorWrapper.isAfterLast()){
+                crimes.add(cursorWrapper.getCrime());
+                cursorWrapper.moveToNext();
+            }
+        }
+        finally {
+            cursorWrapper.close();
+        }
+        return crimes;
     }
 
     public Crime getCrime(UUID id){
-        return null;
+        CrimeCursorWrapper cursorWrapper = queryCrimes(
+                CrimeTable.Cols.UUID + " = ?",
+                new String[] {id.toString()});
+        try{
+            if(cursorWrapper.getCount()==0)
+                return null;
+            cursorWrapper.moveToFirst();
+            return cursorWrapper.getCrime();
+        }
+        finally {
+            cursorWrapper.close();
+        }
     }
 
     public void addCrime(Crime c){
@@ -56,5 +82,18 @@ public class CrimeLab {
         values.put(CrimeTable.Cols.DATE,crime.getDate().getTime());
         values.put(CrimeTable.Cols.SOLVED,crime.isSolved()?1:0);
         return values;
+    }
+
+    private CrimeCursorWrapper queryCrimes(String where, String[] whereArgs){
+        Cursor curs = mDatabase.query(
+                CrimeTable.NAME,
+                null,
+                where,
+                whereArgs,
+                null,
+                null,
+                null
+        );
+        return new CrimeCursorWrapper(curs);
     }
 }
