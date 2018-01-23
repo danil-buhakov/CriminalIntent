@@ -1,10 +1,13 @@
 package com.book.dan.criminalintent;
 
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 
 import com.book.dan.criminalintent.database.CrimeDbHelper;
+import com.book.dan.criminalintent.database.CrimeDbSchema;
+import com.book.dan.criminalintent.database.CrimeDbSchema.CrimeTable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +15,6 @@ import java.util.UUID;
 
 public class CrimeLab {
     private static CrimeLab sCrimeLab;
-    private List<Crime> mCrimes;
     private Context mContext;
     private SQLiteDatabase mDatabase;
 
@@ -26,22 +28,33 @@ public class CrimeLab {
     private CrimeLab(Context context){
         mContext = context;
         mDatabase = new CrimeDbHelper(mContext).getWritableDatabase();
-        mCrimes = new ArrayList<>();
     }
 
     public List<Crime> getCrimes(){
-        return mCrimes;
+        return null;
     }
 
     public Crime getCrime(UUID id){
-        for(Crime c:mCrimes){
-            if(c.getId().equals(id))
-                return c;
-        }
         return null;
     }
 
     public void addCrime(Crime c){
-        mCrimes.add(c);
+        ContentValues values = getContentValues(c);
+        mDatabase.insert(CrimeTable.NAME,null,values);
+    }
+
+    public void updateCrime(Crime crime){
+        String uuidString = crime.getId().toString();
+        ContentValues values = getContentValues(crime);
+        mDatabase.update(CrimeTable.NAME,values,CrimeTable.Cols.UUID+" = ?", new String[] {uuidString});
+    }
+
+    private static ContentValues getContentValues(Crime crime){
+        ContentValues values = new ContentValues();
+        values.put(CrimeTable.Cols.UUID,crime.getId().toString());
+        values.put(CrimeTable.Cols.TITLE,crime.getTitle());
+        values.put(CrimeTable.Cols.DATE,crime.getDate().getTime());
+        values.put(CrimeTable.Cols.SOLVED,crime.isSolved()?1:0);
+        return values;
     }
 }
