@@ -2,6 +2,7 @@ package com.book.dan.criminalintent;
 
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
@@ -15,6 +16,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.FileProvider;
+import android.telecom.Call;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -52,6 +54,17 @@ public class CrimeFragment extends Fragment {
     private ImageView mPhotoView;
     private ImageButton mCameraButton;
     private File mPhotoFile;
+    private Callbacks mCallbacks;
+
+    public interface Callbacks{
+        public void onCrimeUpdated(Crime c);
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        mCallbacks = (Callbacks) context;
+    }
 
     public static CrimeFragment newInstance(UUID id){
         Bundle args = new Bundle();
@@ -76,6 +89,7 @@ public class CrimeFragment extends Fragment {
             return;
         if(requestCode==TARGET_DATE){
             mCrime.setDate(DatePickerFragment.getDateFromIntent(data));
+            updateCrime();
             updateDate();
         }
         if(requestCode==REQUEST_CONTACTS&&data!=null){
@@ -88,6 +102,7 @@ public class CrimeFragment extends Fragment {
                     c.moveToFirst();
                     String suspect = c.getString(0);
                     mCrime.setSuspect(suspect);
+                    updateCrime();
                     mSuspectButton.setText(suspect);
                 } finally {
                     c.close();
@@ -96,6 +111,7 @@ public class CrimeFragment extends Fragment {
         if(requestCode==REQUEST_PHOTO){
             Uri uri = FileProvider.getUriForFile(getActivity(),"com.book.dan.criminalintent.fileprovider",mPhotoFile);
             getActivity().revokeUriPermission(uri,Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            updateCrime();
             updatePhotoView();
         }
     }
@@ -118,6 +134,7 @@ public class CrimeFragment extends Fragment {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 mCrime.setTitle(s.toString());
+                updateCrime();
             }
 
             @Override
@@ -141,6 +158,7 @@ public class CrimeFragment extends Fragment {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 mCrime.setSolved(isChecked);
+                updateCrime();
             }
         });
         mReportButton = (Button) v.findViewById(R.id.crime_report);
@@ -226,5 +244,16 @@ public class CrimeFragment extends Fragment {
             Bitmap bitmap = PictureUtils.getScaledBitmap(mPhotoFile.getPath(),getActivity());
             mPhotoView.setImageBitmap(bitmap);
         }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mCallbacks = null;
+    }
+
+    private void updateCrime(){
+        CrimeLab.get(getActivity()).updateCrime(mCrime);
+        mCallbacks.onCrimeUpdated(mCrime);
     }
 }
