@@ -38,6 +38,7 @@ import java.util.UUID;
 public class CrimeFragment extends Fragment {
     private static final String ARG_CRIME_ID="crime_id";
     private static final String DIALOG_DATE = "Dialog date";
+    private static final String DIALOG_BIG_PICTURE = "Dialog big picture";
 
     private static final int TARGET_DATE = 0;
     private static final int REQUEST_CONTACTS = 1;
@@ -191,6 +192,14 @@ public class CrimeFragment extends Fragment {
             }
         });
         updatePhotoView();
+        mPhotoView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                FragmentManager fm = getFragmentManager();
+                BigPictureFragment fragment = BigPictureFragment.newInstance(mPhotoFile.getPath());
+                fragment.show(fm,DIALOG_BIG_PICTURE);
+            }
+        });
         return v;
     }
 
