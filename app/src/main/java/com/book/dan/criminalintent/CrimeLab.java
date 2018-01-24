@@ -12,6 +12,7 @@ import com.book.dan.criminalintent.database.CrimeDbHelper;
 import com.book.dan.criminalintent.database.CrimeDbSchema;
 import com.book.dan.criminalintent.database.CrimeDbSchema.CrimeTable;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -96,5 +97,10 @@ public class CrimeLab {
                 null
         );
         return new CrimeCursorWrapper(curs);
+    }
+
+    public File getPhotoFile(Crime crime){
+        File fileDir = mContext.getFilesDir();
+        return new File(fileDir,crime.getPhotoFilename());
     }
 }
