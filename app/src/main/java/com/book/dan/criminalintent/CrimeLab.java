@@ -4,12 +4,10 @@ package com.book.dan.criminalintent;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
-import android.database.CursorWrapper;
 import android.database.sqlite.SQLiteDatabase;
 
 import com.book.dan.criminalintent.database.CrimeCursorWrapper;
 import com.book.dan.criminalintent.database.CrimeDbHelper;
-import com.book.dan.criminalintent.database.CrimeDbSchema;
 import com.book.dan.criminalintent.database.CrimeDbSchema.CrimeTable;
 
 import java.io.File;
@@ -102,5 +100,9 @@ public class CrimeLab {
     public File getPhotoFile(Crime crime){
         File fileDir = mContext.getFilesDir();
         return new File(fileDir,crime.getPhotoFilename());
+    }
+
+    public void deleteCrime(Crime crime){
+        mDatabase.delete(CrimeTable.NAME,CrimeTable.Cols.UUID+" = ?", new String[]{crime.getId().toString()});
     }
 }

@@ -10,6 +10,7 @@ import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -20,6 +21,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.Collections;
 import java.util.List;
 
 public class CrimeListFragment extends Fragment {
@@ -56,6 +58,9 @@ public class CrimeListFragment extends Fragment {
         mCrimeRecyclerView = (RecyclerView) v.findViewById(R.id.crime_recycler_view);
         mCrimeRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         updateUI();
+        DeleteCrimesItemTouchHelperCallback callback = new DeleteCrimesItemTouchHelperCallback(mCrimeAdapter);
+        ItemTouchHelper helper = new ItemTouchHelper(callback);
+        helper.attachToRecyclerView(mCrimeRecyclerView);
         return v;
     }
 
@@ -156,7 +161,7 @@ public class CrimeListFragment extends Fragment {
         }
     }
 
-    private class CrimeAdapter extends RecyclerView.Adapter<CrimeHolder>{
+    private class CrimeAdapter extends RecyclerView.Adapter<CrimeHolder> implements DeleteCrimesItemTouchHelperCallback.ItemTouchHelperAdapter {
 
         private List<Crime> mCrimes;
         public CrimeAdapter(List<Crime> crimes){
@@ -181,6 +186,27 @@ public class CrimeListFragment extends Fragment {
 
         public void setCrimes(List<Crime> crimes){
             mCrimes = crimes;
+        }
+
+        @Override
+        public void onItemMove(int fromPosition, int toPosition){
+            if (fromPosition < toPosition) {
+                for (int i = fromPosition; i < toPosition; i++) {
+                    Collections.swap(mCrimes, i, i + 1);
+                }
+            } else {
+                for (int i = fromPosition; i > toPosition; i--) {
+                    Collections.swap(mCrimes, i, i - 1);
+                }
+            }
+            notifyItemMoved(fromPosition, toPosition);
+        }
+
+        @Override
+        public void onItemDismiss(int position){
+            CrimeLab.get(getActivity()).deleteCrime(mCrimes.get(position));
+            mCrimes.remove(position);
+            notifyItemRemoved(position);
         }
     }
 
